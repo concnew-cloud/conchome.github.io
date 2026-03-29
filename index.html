@@ -230,7 +230,7 @@
   var PARENT_PIN = "1234";
   // ============================================================
 
-  var HAS_DB_URL = FIREBASE_CONFIG.databaseURL !== "https://conchome-default-rtdb.firebaseio.com";
+  var HAS_DB_URL = FIREBASE_CONFIG.databaseURL.indexOf("firebaseio.com") !== -1 || FIREBASE_CONFIG.databaseURL.indexOf("firebasedatabase.app") !== -1;
   var isParent = false;
   var localTick = null;
   var stateRef = null;
