@@ -7,42 +7,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #0d0f14;
-      --surface: #161920;
-      --border: #252830;
-      --accent: #4ade80;
-      --accent-dim: #1a3a25;
-      --warn: #facc15;
-      --warn-dim: #2d2a0a;
-      --danger: #f87171;
-      --danger-dim: #2d1010;
-      --text: #e8eaf0;
-      --muted: #5a5f70;
-      --radius: 16px;
+      --bg: #0d0f14; --surface: #161920; --border: #252830;
+      --accent: #4ade80; --accent-dim: #1a3a25;
+      --warn: #facc15; --warn-dim: #2d2a0a;
+      --danger: #f87171; --danger-dim: #2d1010;
+      --text: #e8eaf0; --muted: #5a5f70; --radius: 16px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Manrope', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-    .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; position: relative; }
+    body { background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+    .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
     .header { text-align: center; margin-bottom: 8px; }
     .header h1 { font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
     .header .date { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
@@ -56,10 +30,10 @@
     .progress-wrap { margin-top: 24px; }
     .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; margin-bottom: 8px; }
     .progress-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 1s linear, background 0.3s; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s, background 0.3s; }
     .progress-fill.warning { background: var(--warn); }
-    .progress-fill.over { background: var(--danger); width: 100% !important; }
-    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; margin-top: 20px; }
+    .progress-fill.over    { background: var(--danger); width: 100% !important; }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-top: 20px; }
     .status-badge.idle    { background: var(--border); color: var(--muted); }
     .status-badge.running { background: var(--accent-dim); color: var(--accent); }
     .status-badge.paused  { background: var(--warn-dim); color: var(--warn); }
@@ -68,13 +42,13 @@
     .dot.pulse { animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .controls { display: flex; gap: 10px; }
-    .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
+    .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
     .btn:active { transform: scale(0.97); }
     .btn-start { background: var(--accent); color: #0d1a12; }
     .btn-pause { background: var(--warn-dim); color: var(--warn); border: 1px solid rgba(250,204,21,0.2); }
     .btn-stop  { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(248,113,113,0.2); }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .limit-row { display: flex; align-items: center; gap: 10px; }
+    .limit-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
     .limit-label { font-size: 13px; color: var(--muted); flex: 1; }
     .limit-label span { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
     .limit-input-wrap { display: flex; align-items: center; gap: 6px; }
@@ -83,7 +57,7 @@
     .limit-value { font-family: 'Space Mono', monospace; font-size: 16px; min-width: 52px; text-align: center; }
     .log-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
     .log-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 16px 0; }
-    .log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .log-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
     .log-item:last-child { border-bottom: none; }
     .log-dur { font-family: 'Space Mono', monospace; color: var(--accent); }
     .pin-overlay { position: fixed; inset: 0; background: rgba(13,15,20,0.97); display: flex; align-items: center; justify-content: center; z-index: 100; }
@@ -106,7 +80,6 @@
     .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
     .child-note { text-align: center; font-size: 12px; color: var(--muted); padding: 8px; }
     .db-error { background: var(--danger-dim); border: 1px solid rgba(248,113,113,0.3); border-radius: 12px; padding: 14px 18px; font-size: 12px; color: var(--danger); line-height: 1.6; }
-    .db-error code { font-family: 'Space Mono', monospace; font-size: 11px; background: rgba(248,113,113,0.1); padding: 1px 5px; border-radius: 4px; }
     @media (max-width: 400px) { .timer-value { font-size: 56px; } .card { padding: 20px; } }
   </style>
 </head>
@@ -116,10 +89,8 @@
   <div class="pin-card">
     <div class="pin-title">Родительский доступ</div>
     <div class="pin-dots">
-      <div class="pin-dot" id="d0"></div>
-      <div class="pin-dot" id="d1"></div>
-      <div class="pin-dot" id="d2"></div>
-      <div class="pin-dot" id="d3"></div>
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
     </div>
     <div class="pin-keypad">
       <button class="pin-key" onclick="pinPress('1')">1</button>
@@ -146,9 +117,7 @@
     <div class="date" id="dateDisplay"></div>
   </div>
 
-  <div class="db-error" id="dbError" style="display:none">
-    ❌ Нет подключения к базе данных. Создайте <code>Realtime Database</code> в Firebase Console и вставьте <code>databaseURL</code> в файл.
-  </div>
+  <div class="db-error" id="dbError" style="display:none"></div>
 
   <div class="alert" id="overtimeAlert" style="display:none">
     <span style="font-size:18px">⚠️</span>
@@ -166,25 +135,20 @@
         </div>
       </div>
       <div class="progress-wrap">
-        <div class="progress-meta">
-          <span>0</span>
-          <span id="limitLabel">2ч 00м</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill" style="width:0%"></div>
-        </div>
+        <div class="progress-meta"><span>0</span><span id="limitLabel">2ч 00м</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
       </div>
     </div>
   </div>
 
   <div class="card" id="controlsCard" style="display:none">
-    <div class="controls" style="margin-bottom:16px">
+    <div class="controls">
       <button class="btn btn-start" id="btnStart" onclick="timerStart()">▶ Старт</button>
       <button class="btn btn-pause" id="btnPause" onclick="timerPause()" disabled>⏸ Пауза</button>
       <button class="btn btn-stop"  id="btnStop"  onclick="timerStop()"  disabled>⏹ Стоп</button>
     </div>
-    <div class="divider"></div>
-    <div class="limit-row" style="margin-top:16px">
+    <div class="divider" style="margin-top:16px"></div>
+    <div class="limit-row">
       <div class="limit-label">Дневной лимит <span>часов за день</span></div>
       <div class="limit-input-wrap">
         <button class="limit-btn" onclick="changeLimit(-0.5)">−</button>
@@ -202,19 +166,12 @@
   <div id="resetWrap" style="display:none">
     <button class="btn-reset" onclick="resetDay()">↺ Сбросить день</button>
   </div>
-
-  <div class="child-note" id="childNote" style="display:none">
-    👁 Режим просмотра — управление у родителя
-  </div>
+  <div class="child-note" id="childNote" style="display:none">👁 Режим просмотра — управление у родителя</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  // ============================================================
-  // 🔧 ВАШИ ДАННЫЕ FIREBASE
-  // ⚠️  Добавьте databaseURL после создания Realtime Database:
-  //     Firebase Console → Realtime Database → скопируйте URL
   // ============================================================
   var FIREBASE_CONFIG = {
     apiKey:            "AIzaSyAdQTeWKu6lYq66AwopTy9qJzkxCFUCp1Q",
@@ -225,58 +182,69 @@
     messagingSenderId: "349487445928",
     appId:             "1:349487445928:web:36f5630a94eee69058cf9d"
   };
-
-  // 🔑 ВАШ PIN (4 цифры) — замените на свой
-  var PARENT_PIN = "1234";
+  var PARENT_PIN = "1234"; // 🔑 Смените на свой PIN
   // ============================================================
 
-  var HAS_DB_URL = FIREBASE_CONFIG.databaseURL.indexOf("firebaseio.com") !== -1 || FIREBASE_CONFIG.databaseURL.indexOf("firebasedatabase.app") !== -1;
-  var isParent = false;
-  var localTick = null;
-  var stateRef = null;
+  // Состояние в Firebase:
+  // - accumulatedSec : секунды накопленные в завершённых сессиях
+  // - currentStart   : timestamp (мс) начала текущей сессии, null если стоп/пауза
+  // - status         : "idle" | "running" | "paused"
+  // - limitHours     : дневной лимит
+  // - sessions       : массив завершённых сессий { start, dur }
+  // - day            : дата "YYYY-MM-DD"
+  //
+  // Итоговое время считается на лету:
+  //   total = accumulatedSec + (status==='running' ? (now - currentStart)/1000 : 0)
+  // Firebase пишем ТОЛЬКО при нажатии кнопок — не каждую секунду!
 
-  var state = {
-    status: "idle",
-    totalSeconds: 0,
-    limitHours: 2,
-    sessions: [],
-    currentStart: null,
-    day: todayStr()
-  };
+  var isParent = false;
+  var stateRef = null;
+  var tickTimer = null;
+
+  var state = defaultState();
 
   function todayStr() { return new Date().toISOString().slice(0,10); }
 
+  function defaultState() {
+    return {
+      status: "idle",
+      accumulatedSec: 0,
+      currentStart: null,
+      limitHours: 2,
+      sessions: [],
+      day: todayStr()
+    };
+  }
+
+  // Считаем реальное время на текущий момент
+  function calcTotal(s) {
+    var acc = s.accumulatedSec || 0;
+    if (s.status === 'running' && s.currentStart) {
+      acc += Math.floor((Date.now() - s.currentStart) / 1000);
+    }
+    return acc;
+  }
+
   // ── PIN ──────────────────────────────────────────────────────
   var pinBuffer = "";
-
   function pinPress(d) {
     if (pinBuffer.length >= 4) return;
-    pinBuffer += d;
-    updatePinDots(false);
+    pinBuffer += d; updatePinDots(false);
     if (pinBuffer.length === 4) setTimeout(checkPin, 150);
   }
-
-  function pinDel() {
-    pinBuffer = pinBuffer.slice(0,-1);
-    updatePinDots(false);
-    document.getElementById('pinError').textContent = '';
-  }
-
+  function pinDel() { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(false); document.getElementById('pinError').textContent=''; }
   function viewAsChild() { isParent = false; showApp(); }
-
   function updatePinDots(error) {
-    for (var i=0; i<4; i++) {
-      var dot = document.getElementById('d'+i);
-      dot.className = 'pin-dot' + (error ? ' error' : (i < pinBuffer.length ? ' filled' : ''));
+    for (var i=0;i<4;i++) {
+      document.getElementById('d'+i).className = 'pin-dot'+(error?' error':(i<pinBuffer.length?' filled':''));
     }
   }
-
   function checkPin() {
     if (pinBuffer === PARENT_PIN) { isParent = true; showApp(); }
     else {
       updatePinDots(true);
       document.getElementById('pinError').textContent = 'Неверный PIN';
-      setTimeout(function() { pinBuffer=''; updatePinDots(false); document.getElementById('pinError').textContent=''; }, 1000);
+      setTimeout(function(){ pinBuffer=''; updatePinDots(false); document.getElementById('pinError').textContent=''; }, 1000);
     }
   }
 
@@ -288,112 +256,126 @@
     document.getElementById('resetWrap').style.display    = isParent ? 'block' : 'none';
     document.getElementById('childNote').style.display    = isParent ? 'none'  : 'block';
 
-    if (!HAS_DB_URL) {
-      document.getElementById('dbError').style.display = 'block';
-      renderState();
-      return;
-    }
-
     try {
       if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
       var db = firebase.database();
       stateRef = db.ref('screentime');
 
+      // Слушаем Firebase — обновляем state при изменении с другого устройства
       stateRef.on('value', function(snap) {
         var data = snap.val();
-        if (data) {
-          if (data.day !== todayStr()) { pushState(defaultState()); return; }
-          state = data;
-        } else {
-          pushState(defaultState());
+        if (!data || data.day !== todayStr()) {
+          // Новый день или пусто — сбрасываем
+          var fresh = defaultState();
+          fresh.limitHours = (data && data.limitHours) ? data.limitHours : 2;
+          stateRef.set(fresh);
+          return;
         }
-        if (localTick) clearInterval(localTick);
-        if (state.status === 'running') startTick();
+        state = data;
+        startLocalTick();
         renderState();
       }, function(err) {
-        document.getElementById('dbError').style.display = 'block';
-        document.getElementById('dbError').textContent = '❌ Ошибка Firebase: ' + err.message;
+        showDbError('Ошибка Firebase: ' + err.message + '. Проверьте Rules в Realtime Database.');
       });
+
     } catch(e) {
-      document.getElementById('dbError').style.display = 'block';
+      showDbError('Не удалось подключиться к Firebase: ' + e.message);
     }
   }
 
-  function defaultState() {
-    return { status:"idle", totalSeconds:0, limitHours:state.limitHours||2, sessions:[], currentStart:null, day:todayStr() };
+  function showDbError(msg) {
+    var el = document.getElementById('dbError');
+    el.style.display = 'block';
+    el.textContent = '❌ ' + msg;
   }
 
+  // Локальный тик — только для плавного обновления экрана, НЕ пишет в Firebase
+  function startLocalTick() {
+    if (tickTimer) clearInterval(tickTimer);
+    if (state.status === 'running') {
+      tickTimer = setInterval(function() { renderState(); }, 1000);
+    }
+  }
+
+  // Запись в Firebase — только при действиях пользователя
   function pushState(s) {
     state = s;
-    if (HAS_DB_URL && stateRef) stateRef.set(s);
-    else renderState();
-  }
-
-  function startTick() {
-    if (localTick) clearInterval(localTick);
-    localTick = setInterval(function() {
-      if (state.status==='running') { state.totalSeconds++; renderState(); }
-    }, 1000);
+    if (stateRef) stateRef.set(s);
+    startLocalTick();
+    renderState();
   }
 
   // ── CONTROLS ─────────────────────────────────────────────────
   function timerStart() {
-    if (state.status==='running') return;
-    pushState(Object.assign({}, state, { status:'running', currentStart:Date.now() }));
-    startTick();
+    if (state.status === 'running') return;
+    pushState(Object.assign({}, state, { status:'running', currentStart: Date.now() }));
   }
 
   function timerPause() {
-    if (state.status!=='running') return;
-    if (localTick) clearInterval(localTick);
-    pushState(Object.assign({}, state, { status:'paused', currentStart:null, sessions:addSession(state) }));
+    if (state.status !== 'running') return;
+    var elapsed = Math.floor((Date.now() - state.currentStart) / 1000);
+    var sessions = addSessionToLog(state, elapsed);
+    pushState(Object.assign({}, state, {
+      status: 'paused',
+      accumulatedSec: (state.accumulatedSec||0) + elapsed,
+      currentStart: null,
+      sessions: sessions
+    }));
   }
 
   function timerStop() {
-    if (state.status==='idle') return;
-    if (localTick) clearInterval(localTick);
-    var sessions = state.status==='running' ? addSession(state) : (state.sessions||[]);
-    pushState(Object.assign({}, state, { status:'idle', currentStart:null, sessions:sessions }));
+    if (state.status === 'idle') return;
+    var elapsed = state.status === 'running' ? Math.floor((Date.now() - state.currentStart) / 1000) : 0;
+    var sessions = state.status === 'running' ? addSessionToLog(state, elapsed) : (state.sessions||[]);
+    pushState(Object.assign({}, state, {
+      status: 'idle',
+      accumulatedSec: (state.accumulatedSec||0) + elapsed,
+      currentStart: null,
+      sessions: sessions
+    }));
   }
 
   function changeLimit(delta) {
-    pushState(Object.assign({}, state, { limitHours: Math.max(0.5, Math.min(12, (state.limitHours||2)+delta)) }));
+    pushState(Object.assign({}, state, {
+      limitHours: Math.max(0.5, Math.min(12, (state.limitHours||2) + delta))
+    }));
   }
 
   function resetDay() {
     if (!confirm('Сбросить весь прогресс за сегодня?')) return;
-    if (localTick) clearInterval(localTick);
-    pushState(defaultState());
+    pushState(Object.assign(defaultState(), { limitHours: state.limitHours||2 }));
   }
 
-  function addSession(st) {
+  function addSessionToLog(st, elapsed) {
+    if (!elapsed || elapsed <= 0) return st.sessions||[];
     var sessions = (st.sessions||[]).slice();
-    if (st.currentStart) {
-      sessions.push({
-        start: new Date(st.currentStart).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}),
-        dur:   Math.floor((Date.now()-st.currentStart)/1000)
-      });
-    }
+    sessions.push({
+      start: new Date(st.currentStart).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}),
+      dur: elapsed
+    });
     return sessions;
   }
 
   // ── RENDER ───────────────────────────────────────────────────
   function pad(n) { return String(n).padStart(2,'0'); }
+  function fmtSec(sec) { return pad(Math.floor(sec/3600))+':'+pad(Math.floor((sec%3600)/60))+':'+pad(sec%60); }
   function fmtDur(sec) {
-    var h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
-    return h>0 ? h+'ч '+pad(m)+'м' : pad(m)+'м '+pad(s)+'с';
+    var h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+    return h>0?h+'ч '+pad(m)+'м':pad(m)+'м '+pad(s)+'с';
   }
   function fmtLimit(h) {
-    var lh=Math.floor(h), lm=Math.round((h-lh)*60);
-    return lm>0 ? lh+'ч '+lm+'м' : lh+'ч 00м';
+    var lh=Math.floor(h),lm=Math.round((h-lh)*60);
+    return lm>0?lh+'ч '+lm+'м':lh+'ч 00м';
   }
 
   function renderState() {
-    var sec=state.totalSeconds||0, lim=(state.limitHours||2)*3600;
-    var pct=Math.min(100,(sec/lim)*100), isOver=sec>=lim, isWarn=pct>=80&&!isOver;
+    var sec    = calcTotal(state);
+    var lim    = (state.limitHours||2) * 3600;
+    var pct    = Math.min(100, (sec/lim)*100);
+    var isOver = sec >= lim;
+    var isWarn = pct >= 80 && !isOver;
 
-    document.getElementById('timerValue').textContent =
-      pad(Math.floor(sec/3600))+':'+pad(Math.floor((sec%3600)/60))+':'+pad(sec%60);
+    document.getElementById('timerValue').textContent = fmtSec(sec);
     document.getElementById('timerValue').className =
       'timer-value'+(state.status==='running'?(isOver?' over':isWarn?' warning':' running'):'');
 
@@ -402,8 +384,8 @@
     document.getElementById('limitDisplay').textContent = ls;
 
     var pf = document.getElementById('progressFill');
-    pf.style.width  = pct+'%';
-    pf.className    = 'progress-fill'+(isOver?' over':isWarn?' warning':'');
+    pf.style.width = pct+'%';
+    pf.className = 'progress-fill'+(isOver?' over':isWarn?' warning':'');
 
     document.getElementById('statusBadge').className = 'status-badge '+(isOver?'over':state.status);
     document.getElementById('statusDot').className   = 'dot'+(state.status==='running'?' pulse':'');
@@ -420,8 +402,8 @@
 
     var sessions = state.sessions||[];
     document.getElementById('sessionLog').innerHTML = sessions.length===0
-      ? '<div class="log-empty">Сессий пока нет</div>'
-      : sessions.map(function(s){
+      ?'<div class="log-empty">Сессий пока нет</div>'
+      :sessions.slice().reverse().map(function(s){
           return '<div class="log-item"><span>Сессия с '+s.start+'</span><span class="log-dur">'+fmtDur(s.dur)+'</span></div>';
         }).join('');
 
