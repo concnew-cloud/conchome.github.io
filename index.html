@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Экранное время</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --surface: #161920;
+      --border: #252830;
+      --accent: #4ade80;
+      --accent-dim: #1a3a25;
+      --warn: #facc15;
+      --warn-dim: #2d2a0a;
+      --danger: #f87171;
+      --danger-dim: #2d1010;
+      --text: #e8eaf0;
+      --muted: #5a5f70;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .header h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .header .date {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    /* Timer display */
+    .timer-display {
+      text-align: center;
+      padding: 36px 0;
+    }
+    .timer-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .timer-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 72px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      transition: color 0.3s;
+    }
+    .timer-value.running { color: var(--accent); }
+    .timer-value.warning { color: var(--warn); }
+    .timer-value.over { color: var(--danger); }
+
+    /* Progress bar */
+    .progress-wrap {
+      margin-top: 24px;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 1s linear, background 0.3s;
+    }
+    .progress-fill.warning { background: var(--warn); }
+    .progress-fill.over { background: var(--danger); width: 100% !important; }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-top: 20px;
+    }
+    .status-badge.idle { background: var(--border); color: var(--muted); }
+    .status-badge.running { background: var(--accent-dim); color: var(--accent); }
+    .status-badge.paused { background: var(--warn-dim); color: var(--warn); }
+    .status-badge.over { background: var(--danger-dim); color: var(--danger); }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .dot.pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-start {
+      background: var(--accent);
+      color: #0d1a12;
+    }
+    .btn-pause {
+      background: var(--warn-dim);
+      color: var(--warn);
+      border: 1px solid rgba(250,204,21,0.2);
+    }
+    .btn-stop {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid rgba(248,113,113,0.2);
+    }
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Limit setting */
+    .limit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .limit-label {
+      font-size: 13px;
+      color: var(--muted);
+      flex: 1;
+    }
+    .limit-label span {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+    .limit-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .limit-btn {
+      width: 32px; height: 32px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .limit-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .limit-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      min-width: 52px;
+      text-align: center;
+    }
+
+    /* Sessions log */
+    .log-title {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .log-empty {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      padding: 16px 0;
+    }
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-time { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 12px; }
+    .log-dur { font-family: 'Space Mono', monospace; color: var(--accent); }
+
+    /* PIN overlay */
+    .pin-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13,15,20,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .pin-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+    }
+    .pin-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+    .pin-dots {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .pin-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      transition: all 0.15s;
+    }
+    .pin-dot.filled {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .pin-dot.error {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .pin-key {
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .pin-key:hover { border-color: var(--accent); color: var(--accent); }
+    .pin-key:active { transform: scale(0.95); }
+    .pin-key.del { color: var(--muted); font-size: 14px; }
+    .pin-error {
+      font-size: 12px;
+      color: var(--danger);
+      margin-top: 12px;
+      min-height: 18px;
+    }
+    .pin-skip {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    /* Overtime alert */
+    .alert {
+      background: var(--danger-dim);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-icon { font-size: 18px; }
+
+    /* Reset btn */
+    .btn-reset {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'Manrope', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+    .child-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px;
+    }
+
+    /* Firebase config notice */
+    .config-notice {
+      background: var(--warn-dim);
+      border: 1px solid rgba(250,204,21,0.2);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 12px;
+      color: var(--warn);
+      line-height: 1.6;
+    }
+    .config-notice code {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      background: rgba(250,204,21,0.1);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 400px) {
+      .timer-value { font-size: 56px; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PIN Overlay -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-card">
+    <div class="pin-title">Родительский доступ</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key" onclick="pinPress('')"></button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <div class="pin-skip" onclick="viewAsChild()">Просмотр без управления</div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div class="container" id="app" style="display:none">
+
+  <div class="header">
+    <h1>Экранное время</h1>
+    <div class="date" id="dateDisplay"></div>
+  </div>
+
+  <!-- Firebase not configured notice -->
+  <div class="config-notice" id="configNotice" style="display:none">
+    ⚙️ Настройте Firebase: замените значения в переменной <code>FIREBASE_CONFIG</code> в начале скрипта на свои из Firebase Console.
+  </div>
+
+  <!-- Overtime alert -->
+  <div class="alert" id="overtimeAlert" style="display:none">
+    <span class="alert-icon">⚠️</span>
+    <span>Дневной лимит превышён!</span>
+  </div>
+
+  <!-- Timer card -->
+  <div class="card">
+    <div class="timer-display">
+      <div class="timer-label">Время за сегодня</div>
+      <div class="timer-value" id="timerValue">00:00:00</div>
+      <div style="display:flex;justify-content:center;margin-top:12px">
+        <div class="status-badge idle" id="statusBadge">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText">Не активно</span>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span>0</span>
+          <span id="limitLabel">00:00</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls (parent only) -->
+  <div class="card" id="controlsCard" style="display:none">
+    <div class="controls" style="margin-bottom:16px">
+      <button class="btn btn-start" id="btnStart" onclick="timerStart()">▶ Старт</button>
+      <button class="btn btn-pause" id="btnPause" onclick="timerPause()" disabled>⏸ Пауза</button>
+      <button class="btn btn-stop" id="btnStop" onclick="timerStop()" disabled>⏹ Стоп</button>
+    </div>
+    <div class="divider"></div>
+    <div class="limit-row" style="margin-top:16px">
+      <div class="limit-label">
+        Дневной лимит
+        <span>часов за день</span>
+      </div>
+      <div class="limit-input-wrap">
+        <button class="limit-btn" onclick="changeLimit(-0.5)">−</button>
+        <div class="limit-value" id="limitDisplay">2ч 00м</div>
+        <button class="limit-btn" onclick="changeLimit(0.5)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sessions log -->
+  <div class="card">
+    <div class="log-title">Сессии за сегодня</div>
+    <div id="sessionLog">
+      <div class="log-empty">Сессий пока нет</div>
+    </div>
+  </div>
+
+  <!-- Reset (parent only) -->
+  <div id="resetWrap" style="display:none">
+    <button class="btn-reset" onclick="resetDay()">↺ Сбросить день</button>
+  </div>
+
+  <div class="child-note" id="childNote" style="display:none">
+    👁 Режим просмотра — управление у родителя
+  </div>
+
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ============================================================
+  // 🔧 ЗАМЕНИТЕ НА СВОИ ДАННЫЕ ИЗ FIREBASE CONSOLE
+  // Firebase Console → Project Settings → Your apps → Web app
+  // ============================================================
+  const firebaseConfig = {
+  apiKey: "AIzaSyAdQTeWKu6lYq66AwopTy9qJzkxCFUCp1Q",
+  authDomain: "conchome.firebaseapp.com",
+  projectId: "conchome",
+  storageBucket: "conchome.firebasestorage.app",
+  messagingSenderId: "349487445928",
+  appId: "1:349487445928:web:36f5630a94eee69058cf9d",
+  measurementId: "G-WMHNVTZL5D"
+};
+
+  // ============================================================
+  // 🔑 УСТАНОВИТЕ СВОЙ PIN (4 цифры)
+  // ============================================================
+  const PARENT_PIN = "1987";
+
+  // ============================================================
+
+  const IS_CONFIGURED = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
+
+  let db, stateRef;
+  let isParent = false;
+  let localTick = null;
+
+  // State
+  let state = {
+    status: "idle", // idle | running | paused
+    totalSeconds: 0,
+    limitHours: 2,
+    sessions: [],
+    currentStart: null,
+    day: todayStr()
+  };
+
+  function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  // PIN logic
+  let pinBuffer = "";
+  window.pinPress = function(d) {
+    if (d === '') return;
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += d;
+    updatePinDots();
+    if (pinBuffer.length === 4) {
+      setTimeout(checkPin, 150);
+    }
+  };
+  window.pinDel = function() {
+    pinBuffer = pinBuffer.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+  };
+  window.viewAsChild = function() {
+    isParent = false;
+    showApp();
+  };
+
+  function updatePinDots(error = false) {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('d' + i);
+      dot.classList.remove('filled', 'error');
+      if (error) dot.classList.add('error');
+      else if (i < pinBuffer.length) dot.classList.add('filled');
+    }
+  }
+
+  function checkPin() {
+    if (pinBuffer === PARENT_PIN) {
+      isParent = true;
+      showApp();
+    } else {
+      updatePinDots(true);
+      document.getElementById('pinError').textContent = 'Неверный PIN';
+      setTimeout(() => {
+        pinBuffer = '';
+        updatePinDots();
+        document.getElementById('pinError').textContent = '';
+      }, 1000);
+    }
+  }
+
+  function showApp() {
+    document.getElementById('pinOverlay').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('controlsCard').style.display = isParent ? 'block' : 'none';
+    document.getElementById('resetWrap').style.display = isParent ? 'block' : 'none';
+    document.getElementById('childNote').style.display = isParent ? 'none' : 'block';
+
+    if (!IS_CONFIGURED) {
+      document.getElementById('configNotice').style.display = 'block';
+      // Run in demo mode
+      renderState();
+      if (localTick) clearInterval(localTick);
+      localTick = setInterval(() => {
+        if (state.status === 'running') {
+          state.totalSeconds++;
+          renderState();
+        }
+      }, 1000);
+      return;
+    }
+
+    // Firebase
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getDatabase(app);
+    stateRef = ref(db, 'screentime');
+
+    onValue(stateRef, (snap) => {
+      const data = snap.val();
+      if (data) {
+        // Reset if new day
+        if (data.day !== todayStr()) {
+          pushState(defaultState());
+          return;
+        }
+        state = data;
+      } else {
+        pushState(defaultState());
+      }
+      renderState();
+      // Local tick for smooth timer
+      if (localTick) clearInterval(localTick);
+      if (state.status === 'running') {
+        localTick = setInterval(() => {
+          state.totalSeconds++;
+          renderState();
+        }, 1000);
+      }
+    });
+  }
+
+  function defaultState() {
+    return {
+      status: "idle",
+      totalSeconds: 0,
+      limitHours: 2,
+      sessions: [],
+      currentStart: null,
+      day: todayStr()
+    };
+  }
+
+  async function pushState(s) {
+    state = s;
+    if (IS_CONFIGURED && stateRef) {
+      await set(stateRef, s);
+    }
+    renderState();
+  }
+
+  // Timer controls
+  window.timerStart = function() {
+    if (state.status === 'running') return;
+    if (localTick) clearInterval(localTick);
+    const s = { ...state, status: 'running', currentStart: Date.now() };
+    if (IS_CONFIGURED) {
+      pushState(s);
+    } else {
+      state = s;
+      localTick = setInterval(() => { state.totalSeconds++; renderState(); }, 1000);
+      renderState();
+    }
+  };
+
+  window.timerPause = function() {
+    if (state.status !== 'running') return;
+    if (localTick) clearInterval(localTick);
+    const sessionDur = Math.floor((Date.now() - state.currentStart) / 1000);
+    const sessions = [...(state.sessions || []), {
+      start: new Date(state.currentStart).toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'}),
+      dur: sessionDur
+    }];
+    const s = { ...state, status: 'paused', currentStart: null, sessions };
+    pushState(s);
+  };
+
+  window.timerStop = function() {
+    if (state.status === 'idle') return;
+    if (localTick) clearInterval(localTick);
+    let sessions = state.sessions || [];
+    if (state.status === 'running' && state.currentStart) {
+      const sessionDur = Math.floor((Date.now() - state.currentStart) / 1000);
+      sessions = [...sessions, {
+        start: new Date(state.currentStart).toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'}),
+        dur: sessionDur
+      }];
+    }
+    const s = { ...state, status: 'idle', currentStart: null, sessions };
+    pushState(s);
+  };
+
+  window.changeLimit = function(delta) {
+    const newLimit = Math.max(0.5, Math.min(12, (state.limitHours || 2) + delta));
+    const s = { ...state, limitHours: newLimit };
+    pushState(s);
+  };
+
+  window.resetDay = function() {
+    if (!confirm('Сбросить весь прогресс за сегодня?')) return;
+    if (localTick) clearInterval(localTick);
+    pushState({ ...defaultState(), limitHours: state.limitHours });
+  };
+
+  // Render
+  function renderState() {
+    const sec = state.totalSeconds || 0;
+    const limitSec = (state.limitHours || 2) * 3600;
+    const pct = Math.min(100, (sec / limitSec) * 100);
+    const isOver = sec >= limitSec;
+    const isWarn = pct >= 80 && !isOver;
+
+    // Timer
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    const timeStr = `${pad(h)}:${pad(m)}:${pad(s)}`;
+    const tv = document.getElementById('timerValue');
+    tv.textContent = timeStr;
+    tv.className = 'timer-value' + (state.status === 'running' ? (isOver ? ' over' : isWarn ? ' warning' : ' running') : '');
+
+    // Progress
+    const lh = Math.floor(state.limitHours || 2);
+    const lm = Math.round(((state.limitHours || 2) - lh) * 60);
+    document.getElementById('limitLabel').textContent = lm > 0 ? `${lh}ч ${lm}м` : `${lh}ч`;
+    document.getElementById('limitDisplay').textContent = lm > 0 ? `${lh}ч ${lm}м` : `${lh}ч 00м`;
+    const pf = document.getElementById('progressFill');
+    pf.style.width = pct + '%';
+    pf.className = 'progress-fill' + (isOver ? ' over' : isWarn ? ' warning' : '');
+
+    // Status badge
+    const badge = document.getElementById('statusBadge');
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    badge.className = 'status-badge ' + (isOver ? 'over' : state.status);
+    dot.className = 'dot' + (state.status === 'running' ? ' pulse' : '');
+    txt.textContent = isOver ? 'Лимит исчерпан' : state.status === 'running' ? 'В сети' : state.status === 'paused' ? 'Пауза' : 'Не активно';
+
+    // Overtime alert
+    document.getElementById('overtimeAlert').style.display = isOver ? 'flex' : 'none';
+
+    // Buttons
+    if (isParent) {
+      document.getElementById('btnStart').disabled = state.status === 'running';
+      document.getElementById('btnPause').disabled = state.status !== 'running';
+      document.getElementById('btnStop').disabled = state.status === 'idle';
+    }
+
+    // Sessions log
+    const log = document.getElementById('sessionLog');
+    const sessions = state.sessions || [];
+    if (sessions.length === 0) {
+      log.innerHTML = '<div class="log-empty">Сессий пока нет</div>';
+    } else {
+      log.innerHTML = sessions.map(s => `
+        <div class="log-item">
+          <span>Сессия с ${s.start}</span>
+          <span class="log-dur">${formatDur(s.dur)}</span>
+        </div>
+      `).join('');
+    }
+
+    // Date
+    document.getElementById('dateDisplay').textContent =
+      new Date().toLocaleDateString('ru', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function formatDur(sec) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return h > 0 ? `${h}ч ${pad(m)}м` : `${pad(m)}м ${pad(s)}с`;
+  }
+</script>
+</body>
+</html>
