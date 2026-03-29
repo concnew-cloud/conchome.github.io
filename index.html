@@ -182,20 +182,11 @@
     messagingSenderId: "349487445928",
     appId:             "1:349487445928:web:36f5630a94eee69058cf9d"
   };
-  var PARENT_PIN = "1234"; // 🔑 Смените на свой PIN
+  // PIN хранится в Firebase: Realtime Database → config → pin
+  // В коде его нет — установите через Firebase Console вручную
   // ============================================================
 
-  // Состояние в Firebase:
-  // - accumulatedSec : секунды накопленные в завершённых сессиях
-  // - currentStart   : timestamp (мс) начала текущей сессии, null если стоп/пауза
-  // - status         : "idle" | "running" | "paused"
-  // - limitHours     : дневной лимит
-  // - sessions       : массив завершённых сессий { start, dur }
-  // - day            : дата "YYYY-MM-DD"
-  //
-  // Итоговое время считается на лету:
-  //   total = accumulatedSec + (status==='running' ? (now - currentStart)/1000 : 0)
-  // Firebase пишем ТОЛЬКО при нажатии кнопок — не каждую секунду!
+  var PARENT_PIN = null; // загружается из Firebase при старте
 
   var isParent = false;
   var stateRef = null;
@@ -240,11 +231,36 @@
     }
   }
   function checkPin() {
+    if (!PARENT_PIN) {
+      document.getElementById('pinError').textContent = 'Загрузка PIN...';
+      pinBuffer = ''; updatePinDots(false); return;
+    }
     if (pinBuffer === PARENT_PIN) { isParent = true; showApp(); }
     else {
       updatePinDots(true);
       document.getElementById('pinError').textContent = 'Неверный PIN';
       setTimeout(function(){ pinBuffer=''; updatePinDots(false); document.getElementById('pinError').textContent=''; }, 1000);
+    }
+  }
+
+  // ── BOOT — загружаем PIN из Firebase при старте страницы ─────
+  function boot() {
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      var db = firebase.database();
+      stateRef = db.ref('screentime');
+      db.ref('config/pin').once('value', function(snap) {
+        var pin = snap.val();
+        if (pin) {
+          PARENT_PIN = String(pin);
+        } else {
+          document.getElementById('pinError').textContent = 'PIN не задан в Firebase (config/pin)';
+        }
+      }, function(err) {
+        document.getElementById('pinError').textContent = 'Ошибка Firebase: ' + err.message;
+      });
+    } catch(e) {
+      document.getElementById('pinError').textContent = 'Ошибка: ' + e.message;
     }
   }
 
@@ -410,6 +426,7 @@
     document.getElementById('dateDisplay').textContent =
       new Date().toLocaleDateString('ru',{weekday:'long',day:'numeric',month:'long'});
   }
+  boot();
 </script>
 </body>
 </html>
